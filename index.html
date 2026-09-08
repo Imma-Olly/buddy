@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>bee-dle</title>
+    <meta name="description" content="A five-letter word game. One new puzzle a day." />
+    <meta name="theme-color" content="#12100b" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐝</text></svg>"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <button class="icon-button" id="help-button" type="button" aria-label="How to play">?</button>
+      <h1 class="wordmark">bee<span>-</span>dle</h1>
+      <button class="icon-button" id="stats-button" type="button" aria-label="Statistics">
+        <svg viewBox="0 0 24 24" aria-hidden="true" width="20" height="20">
+          <rect x="3" y="12" width="4" height="9" rx="1" />
+          <rect x="10" y="6" width="4" height="15" rx="1" />
+          <rect x="17" y="9" width="4" height="12" rx="1" />
+        </svg>
+      </button>
+    </header>
+
+    <main>
+      <div class="toast-area">
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      </div>
+
+      <div class="board" id="board" role="grid" aria-label="Guesses"></div>
+
+      <div class="keyboard" id="keyboard" aria-label="Keyboard"></div>
+    </main>
+
+    <dialog class="sheet" id="help">
+      <button class="close" type="button" data-close aria-label="Close">&times;</button>
+      <h2>How to play</h2>
+      <p>Guess the five-letter word in six tries. Every guess must be a real word.</p>
+      <p>After each guess the tiles change colour:</p>
+      <ul class="legend">
+        <li><span class="tile correct" aria-hidden="true">h</span> in the word, in the right spot</li>
+        <li><span class="tile present" aria-hidden="true">i</span> in the word, wrong spot</li>
+        <li><span class="tile absent" aria-hidden="true">v</span> not in the word</li>
+      </ul>
+      <p class="fineprint">A new puzzle appears every day at midnight, and everyone gets the same one. 🐝</p>
+    </dialog>
+
+    <dialog class="sheet" id="stats">
+      <button class="close" type="button" data-close aria-label="Close">&times;</button>
+      <h2>Statistics</h2>
+      <dl class="stat-row" id="stat-row"></dl>
+      <h3>Guess distribution</h3>
+      <div class="distribution" id="distribution"></div>
+      <div class="sheet-actions">
+        <p class="countdown" id="countdown"></p>
+        <button class="share" id="share" type="button" hidden>Share 🐝</button>
+      </div>
+    </dialog>
+
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>
