@@ -22,11 +22,19 @@ modules from that scheme.
 npm test
 ```
 
-44 tests, no dependencies — `node --test` and nothing else. The bulk of them are
-about the tile colours, which is the one rule in this kind of game that is
-genuinely easy to get wrong. Guessing `eerie` against `there` has to produce one
-green e, one yellow e and one grey e; the naive "is this letter anywhere in the
-answer" implementation gets that wrong and is killed by six of the tests.
+64 tests, no dependencies — `node --test` and nothing else.
+
+The bulk of them are about the tile colours, which is the one rule in this kind
+of game that is genuinely easy to get wrong. Guessing `eerie` against `there`
+has to produce one green e, one yellow e and one grey e; the naive "is this
+letter anywhere in the answer" implementation gets that wrong and is killed by
+six of the tests.
+
+The rest are mostly about reading storage. On GitHub Pages every repo an
+account publishes shares one origin, so `beedle:stats` and `beedle:progress`
+are writable by anything else hosted alongside the game — a saved value is
+untrusted input, and `loadStats` rebuilds the object field by field rather than
+merging what it found.
 
 ## How it fits together
 

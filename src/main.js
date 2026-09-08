@@ -159,7 +159,27 @@ function paintStats() {
   shareButton.hidden = state.status === 'playing';
 }
 
+// Built once so the ticking value can be written with textContent — no
+// innerHTML anywhere in this file.
+const countdownLabel = document.createElement('span');
+const countdownClock = document.createElement('strong');
+document.getElementById('countdown').append(countdownLabel, countdownClock);
+
+let rolledOver = false;
+
 function tickCountdown() {
+  // The puzzle number is captured once at boot, so a tab left open past local
+  // midnight is still playing yesterday's word. Say so rather than resetting
+  // the clock to 24h and pretending.
+  if (!rolledOver && puzzleIndex() !== index) {
+    rolledOver = true;
+    countdownLabel.textContent = 'A new bee-dle is ready';
+    countdownClock.textContent = 'Refresh to play it';
+    showToast('A new bee-dle is ready — refresh', 6000);
+    return;
+  }
+  if (rolledOver) return;
+
   const now = new Date();
   const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
   const left = midnight - now;
@@ -167,8 +187,8 @@ function tickCountdown() {
   const hh = pad(Math.floor(left / 3600000));
   const mm = pad(Math.floor(left / 60000) % 60);
   const ss = pad(Math.floor(left / 1000) % 60);
-  document.getElementById('countdown').innerHTML =
-    `Next bee-dle<strong>${hh}:${mm}:${ss}</strong>`;
+  countdownLabel.textContent = 'Next bee-dle';
+  countdownClock.textContent = `${hh}:${mm}:${ss}`;
 }
 
 // -------------------------------------------------------------------- play

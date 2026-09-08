@@ -180,7 +180,12 @@ export function seededShuffle(list, seed) {
 const orderCache = new Map();
 
 function order(answers, seed) {
-  const key = `${seed}:${answers.length}:${answers[0]}`;
+  // The key has to identify the whole list. Keying on length and first word
+  // was enough for the one list that ships and wrong for any second one: two
+  // different lists that happen to agree on both would share a cached shuffle,
+  // and `dailyAnswer` would hand back a word that is not in the list it was
+  // given. Joining is O(n) on a few hundred short strings — it does not matter.
+  const key = `${seed}\n${answers.join(' ')}`;
   if (!orderCache.has(key)) orderCache.set(key, seededShuffle(answers, seed));
   return orderCache.get(key);
 }
@@ -202,8 +207,12 @@ export function dailyAnswer(date = new Date(), answers = ANSWERS, seed = SHUFFLE
 
 const EMOJI = { [CORRECT]: '🟩', [PRESENT]: '🟨', [ABSENT]: '⬜' };
 
-/** The spoiler-free grid players paste into chat. */
-export function shareText(state, index = puzzleIndex()) {
+/**
+ * The spoiler-free grid players paste into chat. `index` is required on
+ * purpose: defaulting it to today would pair today's puzzle number with
+ * whatever grid it was handed, including a restored older one.
+ */
+export function shareText(state, index) {
   const attempts = state.status === 'won' ? `${state.rows.length}/${MAX_GUESSES}` : `X/${MAX_GUESSES}`;
   const grid = state.rows.map((row) => row.score.map((s) => EMOJI[s]).join('')).join('\n');
   return `bee-dle ${index} ${attempts} 🐝\n\n${grid}`;

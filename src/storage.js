@@ -1,6 +1,13 @@
 // localStorage wrappers. Every read is defensive: a player who clears storage,
 // blocks it, or arrives with a half-written value from an older version should
 // get a fresh game, never a broken page.
+//
+// "Defensive" has to mean rebuilt, not merged. On GitHub Pages every repo an
+// account publishes shares one origin, so these keys are reachable by anything
+// else hosted alongside the game — a saved value is untrusted input, and the
+// only safe way to read one is to construct a fresh object field by field.
+
+import { MAX_GUESSES } from './game.js';
 
 const PROGRESS_KEY = 'beedle:progress';
 const STATS_KEY = 'beedle:stats';
@@ -28,14 +35,27 @@ export const emptyStats = () => ({
   wins: 0,
   streak: 0,
   maxStreak: 0,
-  distribution: [0, 0, 0, 0, 0, 0],
+  distribution: new Array(MAX_GUESSES).fill(0),
   lastIndex: null,
 });
 
+/** A count, or 0 for anything that isn't one. */
+const count = (value) => (Number.isInteger(value) && value >= 0 ? value : 0);
+
 export function loadStats() {
   const saved = read(STATS_KEY);
-  if (!saved || typeof saved !== 'object') return emptyStats();
-  return { ...emptyStats(), ...saved };
+  if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return emptyStats();
+
+  const savedDistribution = Array.isArray(saved.distribution) ? saved.distribution : [];
+
+  return {
+    played: count(saved.played),
+    wins: count(saved.wins),
+    streak: count(saved.streak),
+    maxStreak: count(saved.maxStreak),
+    distribution: Array.from({ length: MAX_GUESSES }, (_, i) => count(savedDistribution[i])),
+    lastIndex: Number.isInteger(saved.lastIndex) ? saved.lastIndex : null,
+  };
 }
 
 export function saveStats(stats) {
@@ -71,7 +91,9 @@ export function recordResult(stats, { index, won, guesses }) {
 /** Today's in-progress board, or null if the saved board is for another day. */
 export function loadProgress(index) {
   const saved = read(PROGRESS_KEY);
-  if (!saved || saved.index !== index || !Array.isArray(saved.guesses)) return null;
+  if (!saved || saved.index !== index) return null;
+  if (!Array.isArray(saved.guesses)) return null;
+  if (!saved.guesses.every((guess) => typeof guess === 'string')) return null;
   return saved.guesses;
 }
 

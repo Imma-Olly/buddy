@@ -308,6 +308,27 @@ test('a different answer list gives a different daily word', () => {
   assert.ok(other.includes(dailyAnswer(day(2026, 9, 8), other)));
 });
 
+test('two lists that agree on length and first word do not share a shuffle', () => {
+  // The shuffle is memoised. Keying that cache on anything less than the whole
+  // list means the second caller gets the first caller's order — and so a word
+  // that is not in the list they passed.
+  const a = ['crane', 'tiger', 'mango', 'stone'];
+  const b = ['crane', 'zebra', 'olive', 'plumb'];
+  const when = day(2026, 9, 8);
+
+  const fromA = dailyAnswer(when, a, 999);
+  const fromB = dailyAnswer(when, b, 999);
+
+  assert.ok(a.includes(fromA), `${fromA} is not in the first list`);
+  assert.ok(b.includes(fromB), `${fromB} is not in the second list`);
+});
+
+test('the memo still returns the same order for the same list', () => {
+  const list = ['crane', 'tiger', 'mango', 'stone'];
+  const when = day(2026, 9, 8);
+  assert.equal(dailyAnswer(when, list, 999), dailyAnswer(when, [...list], 999));
+});
+
 // ---------------------------------------------------------------------------
 // Share text
 // ---------------------------------------------------------------------------
@@ -321,6 +342,11 @@ test('the share grid reports the score without leaking the word', () => {
   assert.equal(text.split('\n')[0], 'bee-dle 42 2/6 🐝');
   assert.ok(text.endsWith('🟩🟩🟩🟩🟩'));
   assert.ok(!text.toLowerCase().includes('honey'), 'must not spoil the answer');
+});
+
+test('shareText requires the puzzle number rather than assuming today', () => {
+  // Defaulting it would stamp today's number onto a restored older grid.
+  assert.equal(shareText.length, 2);
 });
 
 test('a loss shares as X/6', () => {
